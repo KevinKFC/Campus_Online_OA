@@ -12,8 +12,36 @@ const app = express();
 const PORT = 4000;
 
 // 允许本地任何端口（5173、3000等）访问，开发更省心
-app.use(cors({ origin: true, credentials: true, methods: ["GET","POST","OPTIONS"] }));
 app.use(express.json());
+// --- CORS FINAL SETUP (drop-in) ---
+import cors from "cors";
+
+// 是否需要携带 Cookie/会话（需要就设为 true）
+const USE_CREDENTIALS = false;
+
+const corsOptions = USE_CREDENTIALS
+  ? {
+      // 携带凭证时，不能用 "*"；这里动态回显请求方 Origin，等价于放行所有来源
+      origin: (origin, cb) => cb(null, true),
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+      exposedHeaders: ["Content-Disposition"],
+    }
+  : {
+      // 不携带凭证时，直接允许任何来源
+      origin: "*",
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+      exposedHeaders: ["Content-Disposition"],
+    };
+
+// 应用到所有路由
+app.use(cors(corsOptions));
+// 处理预检请求
+app.options("*", cors(corsOptions));
+// --- END CORS SETUP ---
+
 
 // 关键：指向前端静态图片目录
 // 你的项目是 CAMPUS_ONLINE_QA/{client, server} 这种结构：↓
