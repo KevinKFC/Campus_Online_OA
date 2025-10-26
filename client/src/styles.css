@@ -1,0 +1,207 @@
+/* ===== 主题增强（渐变+多色） ===== */
+:root{
+  --bg:#0b0f14;
+  --card:#121825;
+  --border:rgba(255,255,255,0.08);
+  --text-main:#eaf0ff;
+  --text-dim:#90a1c0;
+  --accent:#6c8cff;         /* 蓝 */
+  --accent-2:#7e5af0;       /* 紫 */
+  --accent-3:#19d3ae;       /* 青绿 */
+  --radius-lg:1rem;
+  --radius-sm:.6rem;
+  --shadow-card:0 24px 80px rgba(0,0,0,.6);
+  --shadow-focus:0 0 24px rgba(124, 106, 255, .45);
+  color-scheme: dark;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text-main);
+  background: var(--bg);
+}
+
+/* 背景渐变层 */
+.pro-grad {
+  background-image:
+    radial-gradient(1200px 600px at 10% 10%, rgba(108,140,255,.18) 0%, rgba(0,0,0,0) 60%),
+    radial-gradient(1000px 500px at 90% 0%, rgba(126,90,240,.14) 0%, rgba(0,0,0,0) 50%),
+    radial-gradient(900px 800px at 50% 100%, rgba(25,211,174,.1) 0%, rgba(0,0,0,0) 60%);
+  background-attachment: fixed;
+}
+
+/* 顶部进度条容器 */
+.progress-shell {
+  width: min(92vw, 720px);
+  margin: 24px auto 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: rgba(10,12,20,.6);
+  backdrop-filter: blur(8px);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.progress-top-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: .86rem;
+}
+.progress-label{ color: var(--text-main); font-weight: 600;}
+.progress-count{ color: var(--text-dim); font-size: .78rem;}
+
+.progress-bar{
+  height: 8px; margin-top: 10px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 999px; overflow: hidden;
+}
+.progress-bar-inner{
+  height: 100%; width: 0%;
+  transition: width .2s ease;
+}
+/* 彩虹渐变 */
+.rainbow{
+  background: linear-gradient(90deg, var(--accent) 0%, #9a7cff 40%, #51e4c7 100%);
+  box-shadow: 0 0 16px rgba(108,140,255,.6);
+}
+
+/* 居中卡片容器 */
+.app-bg{
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 36px 16px 60px;
+  box-sizing: border-box;
+}
+
+.page-center-wrapper{
+  width: min(92vw, 720px);
+  background: linear-gradient(180deg, rgba(20,25,40,.92), rgba(18,24,37,.92));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--shadow-card);
+}
+.page-center-wrapper.xl{ padding: 28px 22px; }
+
+/* 卡片/内容 */
+.survey-card{ display: grid; gap: 18px; }
+.header-block{ text-align: center; }
+.brand{ font-size: .78rem; color: var(--text-dim); letter-spacing: .06em; }
+.survey-title{ font-size: 1.3rem; font-weight: 700; }
+.survey-title.neon{ text-shadow: 0 0 18px rgba(124,106,255,.45); }
+.survey-sub{ font-size: .85rem; color: var(--text-dim); margin-top: 4px; }
+
+.intro-body{ color: var(--text-dim); font-size: .9rem; line-height: 1.6; }
+.intro-line{ margin: 0 0 8px; }
+
+/* 题面 */
+.question-text{
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+/* 选项（单选） */
+.options-col{
+  display: grid; gap: 10px;
+}
+.option-chip{
+  display: flex; align-items: center;
+  gap: 10px; padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.03);
+  cursor: pointer; box-shadow: var(--shadow-card);
+  transition: all .15s ease;
+}
+.option-chip input{ display: none; }
+.option-chip:hover{ border-color: var(--accent); box-shadow: var(--shadow-focus); }
+.option-chip.selected{ background: rgba(108,140,255,.14); border-color: var(--accent); }
+
+/* 成对比较（单题一对） */
+.pair-two-col{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.pair-vs{
+  justify-self: center; align-self: center;
+  font-size: .8rem; color: var(--text-dim);
+  padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+}
+
+.img-choice{
+  border: 1px solid var(--border);
+  border-radius: .9rem;
+  overflow: hidden; position: relative;
+  background: rgba(255,255,255,.03);
+  cursor: pointer; transition: all .15s ease;
+  box-shadow: var(--shadow-card);
+}
+.img-choice:hover{ border-color: var(--accent-2); box-shadow: 0 0 20px rgba(126,90,240,.4); }
+.img-choice.chosen{ border-color: var(--accent-3); box-shadow: 0 0 22px rgba(25,211,174,.45); }
+
+.pair-img{
+  width: 100%; height: 220px; object-fit: cover; display: block; background: #000;
+}
+.img-label-top{
+  text-align: center; font-size: .8rem;
+  padding: 8px 10px; color: var(--text-main);
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,.35);
+}
+
+/* 翻页按钮 */
+.nav-row{
+  display: flex; justify-content: center; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+}
+.nav-btn{
+  min-width: 116px; border-radius: .65rem; border: 1px solid transparent;
+  font-weight: 700; letter-spacing: .02em;
+  padding: 12px 16px; cursor: pointer; transition: all .15s ease;
+  box-shadow: var(--shadow-card);
+}
+.nav-btn.primary{
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: #fff; border-color: transparent;
+}
+.nav-btn.primary:disabled{ opacity: .6; box-shadow: none; cursor: default; }
+.nav-btn.primary:not(:disabled):hover{
+  transform: translateY(-1px);
+  box-shadow: 0 20px 60px rgba(108,140,255,.5);
+}
+.nav-btn.ghost{
+  background: rgba(255,255,255,.06);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+.nav-btn.ghost:hover{ border-color: var(--accent); box-shadow: var(--shadow-focus); }
+
+/* 提交反馈 */
+.submit-msg{
+  border: 1px solid var(--border); border-radius: .65rem;
+  padding: 10px 12px; text-align: center; font-size: .88rem;
+}
+.submit-msg.ok{ background: rgba(25,211,174,.1); color: #b3ffe8; border-color: rgba(25,211,174,.4); }
+.submit-msg.err{ background: rgba(255,72,72,.1); color: #ffb8b8; border-color: rgba(255,72,72,.35); }
+
+/* 底部 */
+.footer-compact{ text-align: center; color: var(--text-dim); font-size: .78rem; margin-top: 22px; }
+.foot-mini{ opacity: .7; }
+
+/* 响应式：小屏垂直堆叠 */
+@media (max-width: 540px){
+  .page-center-wrapper{ width: 100%; }
+  .pair-two-col{ grid-template-columns: 1fr; }
+  .pair-img{ height: 200px; }
+}

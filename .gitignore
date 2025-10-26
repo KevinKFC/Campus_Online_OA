@@ -1,0 +1,73 @@
+# =========
+# OS / Editor
+# =========
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# =========
+# Logs / PIDs
+# =========
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.pid
+*.pid.lock
+
+# =========
+# Env files (keep example)
+# =========
+.env
+.env.*
+!.env.example
+
+# =========
+# Coverage / caches
+# =========
+coverage/
+.nyc_output/
+.tmp/
+.temp/
+.eslintcache
+
+# =========
+# Root-level Node (if any)
+# =========
+node_modules/
+dist/
+build/
+
+# =========
+# Client (Vite + React + TS)
+# =========
+client/node_modules/
+client/dist/
+client/.vite/
+client/node_modules/.vite/
+client/.cache/
+client/tsconfig.tsbuildinfo
+
+# 不把大体量问卷图片纳入版本库（保留占位符）
+client/public/images/**
+!client/public/images/.gitkeep
+
+# =========
+# Server (Express)
+# =========
+server/node_modules/
+server/dist/
+server/build/
+server/tsconfig.tsbuildinfo
+
+# 运行时生成的结果CSV不入库（保留占位符）
+server/results/*
+!server/results/.gitkeep
+
+# 动态曝光计数文件不入库（每台环境自行生成）
+server/data/image_counts.json
