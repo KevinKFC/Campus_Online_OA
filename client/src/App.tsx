@@ -414,22 +414,6 @@ const App: React.FC = () => {
             </button>
           </div>
         )}
-
-        {isSubmit && (
-          <div className="nav-row">
-            <button
-              className="nav-btn ghost"
-              onClick={() => {
-                setWarn("");
-                setStep((s) => Math.max(1, s - 1));
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              返回修改
-            </button>
-          </div>
-        )}
-
         <footer className="footer-compact">
           <div className="foot-mini">© Campus Perception Study • UrbanAxis Lab</div>
         </footer>
