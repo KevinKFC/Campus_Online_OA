@@ -86,8 +86,10 @@ const App: React.FC = () => {
   const [pairChoices, setPairChoices] = useState<
     Record<string, Record<number, "left" | "right" | "">>
   >({});
-  const choose = (dim: string, idx: number, val: "left" | "right") =>
+  const choose = (dim: string, idx: number, val: "left" | "right") => {
     setPairChoices((p) => ({ ...p, [dim]: { ...(p[dim] || {}), [idx]: val } }));
+    setStep((prevStep) => prevStep + 1); // 自动跳转到下一题
+  };
 
   // ===== 计划的 pairs（来自后端） =====
   const [plannedPairs, setPlannedPairs] = useState<Record<string, Pair[]>>({});
@@ -101,7 +103,7 @@ const App: React.FC = () => {
   // —— 页面定义 —— //
   const introPage: QuestionPage = {
     type: "intro",
-    title: "校园空间感知问卷",
+    title: "大学校园空间感知调查",
     buttonText: "我已知晓，开始答题",
     body: [
       "本问卷采用两两配对的方式评估你对校园场景的主观感受。",
@@ -195,7 +197,7 @@ const App: React.FC = () => {
     setPlanning(true);
     setPlanError("");
     try {
-      const resp = await fetch("http://localhost:4000/api/plan-pairs", {
+      const resp = await fetch("/api/plan-pairs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -240,7 +242,7 @@ const App: React.FC = () => {
     }
 
     try {
-      const resp = await fetch("http://localhost:4000/submit", {
+      const resp = await fetch("api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ meta, comparisons }),
@@ -258,9 +260,9 @@ const App: React.FC = () => {
   const renderIntro = (p: Extract<QuestionPage, { type: "intro" }>) => (
     <div className="survey-card">
       <div className="header-block">
-        <div className="brand">UrbanAxis • Campus Study</div>
+        <div className="brand">DesignFutureLab</div>
         <div className="survey-title neon">{p.title}</div>
-        <div className="survey-sub">Campus Perception Paired-Comparison</div>
+        <div className="survey-sub">Built Environment To Perception</div>
       </div>
       <div className="intro-body">{p.body.map((t, i) => <p className="intro-line" key={i}>{t}</p>)}</div>
 
@@ -339,7 +341,7 @@ const App: React.FC = () => {
         {submitState.sending ? "提交中…" : submitState.done ? "已提交 ✔" : "提交问卷"}
       </button>
       {submitState.error && <div className="submit-msg err">提交失败：{submitState.error}</div>}
-      {submitState.done && <div className="submit-msg ok">感谢参与！数据已保存。</div>}
+      {submitState.done && <div className="submit-msg ok">感谢您的参与！数据已提交。</div>}
     </div>
   );
 
@@ -414,24 +416,8 @@ const App: React.FC = () => {
             </button>
           </div>
         )}
-
-        {isSubmit && (
-          <div className="nav-row">
-            <button
-              className="nav-btn ghost"
-              onClick={() => {
-                setWarn("");
-                setStep((s) => Math.max(1, s - 1));
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            >
-              返回修改
-            </button>
-          </div>
-        )}
-
         <footer className="footer-compact">
-          <div className="foot-mini">© Campus Perception Study • UrbanAxis Lab</div>
+          <div className="foot-mini">© Campus Perception Study • Design Future Lab</div>
         </footer>
       </div>
     </div>

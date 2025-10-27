@@ -1,4 +1,3 @@
-// server/server.js
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -14,7 +13,6 @@ const PORT = 4000;
 // 允许本地任何端口（5173、3000等）访问，开发更省心
 app.use(express.json());
 // --- CORS FINAL SETUP (drop-in) ---
-import cors from "cors";
 
 // 是否需要携带 Cookie/会话（需要就设为 true）
 const USE_CREDENTIALS = false;
@@ -42,9 +40,7 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 // --- END CORS SETUP ---
 
-
 // 关键：指向前端静态图片目录
-// 你的项目是 CAMPUS_ONLINE_QA/{client, server} 这种结构：↓
 const IMAGES_DIR = path.resolve(__dirname, "../client/public/images");
 
 const DATA_DIR = path.join(__dirname, "data");
@@ -109,7 +105,7 @@ function planPairsForDimension(files, countsObj, k) {
 }
 
 // —— 健康检查 & 调试接口 —— //
-app.get("/api/health", (req,res)=>{
+app.get("/health", (req,res)=>{
   const exists = fs.existsSync(IMAGES_DIR);
   const files = exists ? listAllImages() : [];
   res.json({
@@ -122,7 +118,7 @@ app.get("/api/health", (req,res)=>{
   });
 });
 
-app.get("/api/list-images", (req,res)=>{
+app.get("/list-images", (req,res)=>{
   try{
     const exists = fs.existsSync(IMAGES_DIR);
     if(!exists) return res.status(400).json({ ok:false, error:`图片目录不存在: ${IMAGES_DIR}`});
@@ -135,7 +131,7 @@ app.get("/api/list-images", (req,res)=>{
 });
 
 // —— 动态规划 pairs —— //
-app.post("/api/plan-pairs", (req,res)=>{
+app.post("/plan-pairs", (req,res)=>{
   try{
     const { dimensions = [], pairsPerDimension = 5 } = req.body || {};
     if (!Array.isArray(dimensions) || dimensions.length===0) {
@@ -162,41 +158,71 @@ app.post("/api/plan-pairs", (req,res)=>{
   }
 });
 
-// —— 提交并更新计数 —— //
-function toCSV(dataObj){
-  const { meta, comparisons } = dataObj;
+// —— 背景数据和投票数据导出 —— //
+// 生成背景数据 CSV（每个被试者填写的背景信息）
+function writeBackgroundCSV(meta, folderPath) {
   const metaHeaders = Object.keys(meta);
-  const metaValues = metaHeaders.map(k=>`"${meta[k] ?? ""}"`);
-  const compHeaders = ["dimension","pairIndex","leftImage","rightImage","choice"];
-  const compRows = (comparisons||[]).map(r=>[
-    `"${r.dimension}"`,`"${r.pairIndex}"`,`"${r.leftImage}"`,`"${r.rightImage}"`,`"${r.choice}"`
-  ].join(","));
-  return [
-    "Participant Meta",
-    metaHeaders.join(","), metaValues.join(","), "",
-    "Paired Comparisons",
-    compHeaders.join(","), ...compRows, ""
+  const metaValues = metaHeaders.map(k => `"${meta[k] ?? ""}"`);
+  
+  const backgroundCSV = [
+    metaHeaders.join(","),
+    metaValues.join(","),
+    "",
   ].join("\n");
+
+  fs.writeFileSync(path.join(folderPath, "background.csv"), backgroundCSV, "utf-8");
 }
 
+// 生成投票数据 CSV（图片配对比较结果）
+function writeVotesCSV(comparisons, folderPath) {
+  const header = "id,choice,left,right";
+  const rows = [];
+  
+  let idx = 1;
+  const timestamp = Date.now(); // 时间戳（精确到毫秒）
+
+  for (const r of comparisons || []) {
+    const id = `vote_${idx++}_${timestamp}`;
+    const choice = r.choice || "";
+    const leftBase = path.parse(r.leftImage || "").name;  // 去后缀
+    const rightBase = path.parse(r.rightImage || "").name; // 去后缀
+    rows.push([id, choice, leftBase, rightBase].map(v => `"${v}"`).join(","));
+  }
+
+  const votesCSV = [header, ...rows, ""].join("\n");
+  fs.writeFileSync(path.join(folderPath, "votes.csv"), votesCSV, "utf-8");
+}
+
+// —— 提交并更新计数 —— //
 app.post("/submit", (req,res)=>{
   try{
     const body = req.body;
     const ts = new Date().toISOString().replace(/[:.]/g,"-");
-    fs.writeFileSync(path.join(RESULTS_DIR, `participant_${ts}.csv`), toCSV(body), "utf-8");
+    
+    // 创建每个被试者的独立文件夹
+    const participantDir = path.join(RESULTS_DIR, `participant_${ts}`);
+    fs.mkdirSync(participantDir, { recursive: true });
 
-    const dimsInPayload = Array.from(new Set((body.comparisons||[]).map(r=>r.dimension)));
+    // 写入背景数据 CSV（background.csv）
+    writeBackgroundCSV(body.meta, participantDir);
+
+    // 写入投票数据 CSV（votes.csv）
+    writeVotesCSV(body.comparisons, participantDir);
+
+    // 更新曝光计数（按维度，左右各 +1；计数仍以“包含后缀的文件名”为键）
+    const dimsInPayload = Array.from(new Set((body.comparisons || []).map(r => r.dimension)));
     const files = listAllImages();
     const counts = ensureCounts(dimsInPayload, files);
-    for (const r of (body.comparisons||[])) {
-      counts[r.dimension][r.leftImage]  = (counts[r.dimension][r.leftImage]  ?? 0) + 1;
+    for (const r of (body.comparisons || [])) {
+      counts[r.dimension][r.leftImage] = (counts[r.dimension][r.leftImage] ?? 0) + 1;
       counts[r.dimension][r.rightImage] = (counts[r.dimension][r.rightImage] ?? 0) + 1;
     }
     writeJSON(COUNTS_PATH, counts);
-    return res.json({ ok:true });
-  }catch(e){
+
+    return res.json({ ok:true, folder: path.basename(participantDir) });
+  } catch (e) {
     console.error(e);
-    return res.status(500).json({ ok:false, error:"保存失败，请看 server 日志" });
+    return res.status(500).json({ ok: false, error: "保存失败，请查看 server 日志" });
   }
 });
 

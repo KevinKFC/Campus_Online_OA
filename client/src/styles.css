@@ -205,3 +205,9 @@ body {
   .pair-two-col{ grid-template-columns: 1fr; }
   .pair-img{ height: 200px; }
 }
+/* 高亮显示最后两个字 */
+.highlight-text {
+  font-weight: bold;  /* 加粗 */
+  color: #ff4081;      /* 亮色 - 你可以根据需要调整颜色 */
+}
+
