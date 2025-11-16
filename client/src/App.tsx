@@ -43,7 +43,16 @@ const DIM_TITLES: Record<string, string> = {
   lively: "哪个地方看起来更活泼？",
   relaxing: "哪个地方看起来更令人放松？",
   walkable: "哪个地方看起来更适合步行？",
-  bikeable: "哪个地方看起来更适合骑自行车？",
+  // bikeable: "哪个地方看起来更适合骑自行车？",
+};
+
+const DIM_HIGHLIGHTS: Record<string, string> = {
+  safer: "安全",
+  beautiful: "美丽",
+  boring: "无聊",
+  lively: "活泼",
+  relaxing: "令人放松",
+  walkable: "步行",
 };
 
 const ALL_DIMENSIONS = Object.keys(DIM_TITLES); // 每张图适用于所有维度
@@ -120,43 +129,43 @@ const App: React.FC = () => {
       questionText: "您的年龄是？",
       options: ["20岁及以下", "21-29", "30-39", "40-49", "50岁及以上"],
     },
-    { type: "meta", field: "identity", questionText: "您的身份是？", options: ["本科生", "硕士研究生", "博士研究生", "教职工"] },
-    {
-      type: "meta",
-      field: "university",
-      questionText: "您目前在哪所学校？",
-      options: ["华南理工大学", "广州大学", "广州财经大学", "广东工业大学", "其它"],
-    },
-    {
-      type: "meta",
-      field: "yearsInSchool",
-      questionText: "您目前在该学校多久？",
-      options: ["不到1年", "1-2年", "2-3年", "3-4年", "4年以上"],
-    },
-    {
-      type: "meta",
-      field: "discipline",
-      questionText: "您所学的学科类别？",
-      options: ["理学", "工学", "管理学", "经济学", "人文社科", "艺术设计", "医学", "其它"],
-    },
+    { type: "meta", field: "identity", questionText: "您的身份是？", options: ["本科生", "硕士研究生", "博士研究生", "教职工", "其它"] },
+    // {
+    //   type: "meta",
+    //   field: "university",
+    //   questionText: "您目前在哪所学校？",
+    //   options: ["华南理工大学", "广州大学", "广州财经大学", "广东工业大学", "其它"],
+    // },
+    // {
+    //   type: "meta",
+    //   field: "yearsInSchool",
+    //   questionText: "您目前在该学校多久？",
+    //   options: ["不到1年", "1-2年", "2-3年", "3-4年", "4年以上"],
+    // },
+    // {
+    //   type: "meta",
+    //   field: "discipline",
+    //   questionText: "您所学的学科类别？",
+    //   options: ["理学", "工学", "管理学", "经济学", "人文社科", "艺术设计", "医学", "其它"],
+    // },
     {
       type: "meta",
       field: "personality",
       questionText: "您的性格是？",
       options: ["更倾向独处、安静环境（内向）", "更倾向社交、热闹环境（外向）"],
     },
-    {
-      type: "meta",
-      field: "expense",
-      questionText: "您每月大致的花销（人民币）？",
-      options: ["<1000", "1000-2000", "2001-3000", "3000-4000", ">4000"],
-    },
-    {
-      type: "meta",
-      field: "commute",
-      questionText: "您在校园内主要的出行方式是？",
-      options: ["步行", "骑行", "电动车", "校车", "共享单车", "其他"],
-    },
+    // {
+    //   type: "meta",
+    //   field: "expense",
+    //   questionText: "您每月大致的花销（人民币）？",
+    //   options: ["<1000", "1000-2000", "2001-3000", "3000-4000", ">4000"],
+    // },
+    // {
+    //   type: "meta",
+    //   field: "commute",
+    //   questionText: "您在校园内主要的出行方式是？",
+    //   options: ["步行", "骑行", "电动车", "校车", "共享单车", "其他"],
+    // },
   ];
 
   // 将计划好的每个 pair 拆成一道题
@@ -313,16 +322,35 @@ const App: React.FC = () => {
 
   const renderPair = (p: Extract<QuestionPage, { type: "pair" }>) => {
     const cur = pairChoices[p.dimension]?.[p.pairIndex] || "";
+    const highlight = DIM_HIGHLIGHTS[p.dimension];
+    const parts = p.questionText.split(highlight);
+
     return (
       <div className="survey-card">
-        <div className="question-text">{p.questionText}</div>
+        <div className="question-text">
+          {parts.length === 2 ? (
+            <>
+              {parts[0]}
+              <strong>{highlight}</strong>
+              {parts[1]}
+            </>
+          ) : (
+            p.questionText
+          )}
+        </div>
         <div className="pair-two-col">
-          <div className={`img-choice ${cur === "left" ? "chosen" : ""}`} onClick={() => choose(p.dimension, p.pairIndex, "left")}>
+          <div
+            className={`img-choice ${cur === "left" ? "chosen" : ""}`}
+            onClick={() => choose(p.dimension, p.pairIndex, "left")}
+          >
             <img className="pair-img" src={`/images/${p.pair.left}`} alt={`${p.dimension}-L-${p.pairIndex}`} />
             <div className="img-label-top">左边</div>
           </div>
           <div className="pair-vs">VS</div>
-          <div className={`img-choice ${cur === "right" ? "chosen" : ""}`} onClick={() => choose(p.dimension, p.pairIndex, "right")}>
+          <div
+            className={`img-choice ${cur === "right" ? "chosen" : ""}`}
+            onClick={() => choose(p.dimension, p.pairIndex, "right")}
+          >
             <img className="pair-img" src={`/images/${p.pair.right}`} alt={`${p.dimension}-R-${p.pairIndex}`} />
             <div className="img-label-top">右边</div>
           </div>

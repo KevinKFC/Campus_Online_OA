@@ -108,6 +108,13 @@ body {
   margin-bottom: 6px;
 }
 
+.question-text strong {
+  color: var(--accent-3);
+  font-weight: 1000;
+  text-shadow: 0 0 15px rgba(25, 211, 174, 0.5);
+  font-size: 1.5rem;
+}
+
 /* 选项（单选） */
 .options-col{
   display: grid; gap: 10px;
