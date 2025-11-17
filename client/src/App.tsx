@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import "./styles.css";
 
+const PAIRS_PER_DIMENSION = 20; // 在这里调整每个维度的题目数量
+
 type MetaData = {
   gender: string;
   age: string;
@@ -34,13 +36,14 @@ type QuestionPage =
   | { type: "intro"; title: string; body: string[]; buttonText: string }
   | { type: "meta"; field: keyof MetaData; questionText: string; options: string[] }
   | { type: "pair"; dimension: string; pairIndex: number; questionText: string; pair: Pair }
-  | { type: "submit"; title: string; note: string };
+  | { type: "submit"; title: string; note: string }
+  | { type: "break"; title: string; subtitle: string; buttonText: string };
 
 const DIM_TITLES: Record<string, string> = {
   safer: "哪个地方看起来更安全？",
-  beautiful: "哪个地方看起来更美丽？",
-  boring: "哪个地方看起来更无聊？",
-  lively: "哪个地方看起来更活泼？",
+  // beautiful: "哪个地方看起来更美丽？",
+  // boring: "哪个地方看起来更无聊？",
+  // lively: "哪个地方看起来更活泼？",
   relaxing: "哪个地方看起来更令人放松？",
   walkable: "哪个地方看起来更适合步行？",
   // bikeable: "哪个地方看起来更适合骑自行车？",
@@ -52,7 +55,7 @@ const DIM_HIGHLIGHTS: Record<string, string> = {
   boring: "无聊",
   lively: "活泼",
   relaxing: "令人放松",
-  walkable: "步行",
+  walkable: "适合步行",
 };
 
 const ALL_DIMENSIONS = Object.keys(DIM_TITLES); // 每张图适用于所有维度
@@ -115,9 +118,10 @@ const App: React.FC = () => {
     title: "大学校园空间感知调查",
     buttonText: "我已知晓，开始答题",
     body: [
-      "本问卷采用两两配对的方式评估你对校园场景的主观感受。",
-      "每张图片在所有维度中都有可能出现，系统会动态均衡展示次数。",
-      "数据仅用于科研分析，匿名存储。",
+      "本调查旨在研究大学在校生对大学校园环境的主观感知情况。",
+      "调查采用图片两两对比的方式，您需要结合题目从两张图片中选择您认为最符合您个人主观感受的选项。",
+      "我们承诺，您提供的数据将进行严格匿名化存储，并仅用于科研分析。",
+      "本次调查大约需要2-3分钟完成，感谢您的参与与支持！",
     ],
   };
 
@@ -168,10 +172,20 @@ const App: React.FC = () => {
     // },
   ];
 
-  // 将计划好的每个 pair 拆成一道题
+  // 将计划好的每个 pair 拆成一道题，并在每组题前插入过渡页
   const pairPages: QuestionPage[] = useMemo(() => {
     const out: QuestionPage[] = [];
-    for (const dim of Object.keys(plannedPairs)) {
+    const dims = Object.keys(plannedPairs);
+    dims.forEach((dim, dimIndex) => {
+      // 添加过渡页
+      out.push({
+        type: "break",
+        title: `Part ${dimIndex + 1}`,
+        subtitle: `接下来，请判断哪个地方看起来更${DIM_HIGHLIGHTS[dim]}？`,
+        buttonText: "开始",
+      });
+
+      // 添加该维度的所有题目
       plannedPairs[dim].forEach((pair, i) => {
         out.push({
           type: "pair",
@@ -181,7 +195,7 @@ const App: React.FC = () => {
           pair,
         });
       });
-    }
+    });
     return out;
   }, [plannedPairs]);
 
@@ -211,7 +225,7 @@ const App: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dimensions: ALL_DIMENSIONS, // 每张图适用于所有维度
-          pairsPerDimension: 5,
+          pairsPerDimension: PAIRS_PER_DIMENSION,
         }),
       });
       const data: PlanResponse = await resp.json();
@@ -344,7 +358,7 @@ const App: React.FC = () => {
             onClick={() => choose(p.dimension, p.pairIndex, "left")}
           >
             <img className="pair-img" src={`/images/${p.pair.left}`} alt={`${p.dimension}-L-${p.pairIndex}`} />
-            <div className="img-label-top">左边</div>
+            <div className="img-label-top">I</div>
           </div>
           <div className="pair-vs">VS</div>
           <div
@@ -352,9 +366,41 @@ const App: React.FC = () => {
             onClick={() => choose(p.dimension, p.pairIndex, "right")}
           >
             <img className="pair-img" src={`/images/${p.pair.right}`} alt={`${p.dimension}-R-${p.pairIndex}`} />
-            <div className="img-label-top">右边</div>
+            <div className="img-label-top">II</div>
           </div>
         </div>
+      </div>
+    );
+  };
+
+  const renderBreak = (p: Extract<QuestionPage, { type: "break" }>) => {
+    // 从完整的副标题中找到需要高亮的关键词
+    const highlight = p.subtitle.replace("接下来，请判断哪个地方看起来更", "").replace("？", "");
+    const parts = p.subtitle.split(highlight);
+
+    return (
+      <div className="survey-card">
+        <div className="header-block" style={{ margin: "20px 0" }}>
+          <div className="survey-title">{p.title}</div>
+          <div className="survey-sub" style={{ fontSize: "1rem", marginTop: "12px" }}>
+            {parts.length === 2 ? (
+              <>
+                {parts[0]}
+                <strong>{highlight}</strong>
+                {parts[1]}
+              </>
+            ) : (
+              p.subtitle
+            )}
+          </div>
+        </div>
+        <button
+          className="nav-btn primary"
+          style={{ justifySelf: "center" }}
+          onClick={() => setStep((s) => s + 1)}
+        >
+          {p.buttonText}
+        </button>
       </div>
     );
   };
@@ -375,8 +421,9 @@ const App: React.FC = () => {
 
   // —— 底部导航按钮（含强制作答校验） —— //
   const canPrev = step > 0;
-  const canNext = step < pages.length - 1 && !isIntro && !isSubmit;
-  const showNav = !isIntro && !isSubmit;
+  const isBreak = curr?.type === "break";
+  const canNext = step < pages.length - 1 && !isIntro && !isSubmit && !isBreak;
+  const showNav = !isIntro && !isSubmit && !isBreak;
 
   return (
     <div className="app-bg pro-grad">
@@ -407,6 +454,7 @@ const App: React.FC = () => {
         {curr?.type === "intro" && renderIntro(curr)}
         {curr?.type === "meta" && renderMeta(curr)}
         {curr?.type === "pair" && renderPair(curr)}
+        {curr?.type === "break" && renderBreak(curr)}
         {curr?.type === "submit" && renderSubmit(curr)}
 
         {showNav && (

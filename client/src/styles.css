@@ -96,6 +96,13 @@ body {
 .survey-title.neon{ text-shadow: 0 0 18px rgba(124,106,255,.45); }
 .survey-sub{ font-size: .85rem; color: var(--text-dim); margin-top: 4px; }
 
+.survey-sub strong {
+  color: var(--accent-3);
+  font-weight: 1000;
+  text-shadow: 0 0 15px rgba(25, 211, 174, 0.5);
+  font-size: 1.5rem;
+}
+
 .intro-body{ color: var(--text-dim); font-size: .9rem; line-height: 1.6; }
 .intro-line{ margin: 0 0 8px; }
 
