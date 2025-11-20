@@ -1,4 +1,5 @@
 import express from "express";
+import compression from "compression";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
@@ -12,6 +13,8 @@ const PORT = 4000;
 
 // 允许本地任何端口（5173、3000等）访问，开发更省心
 app.use(express.json());
+// 启用压缩（gzip / brotli 由 Node/客户端协商）
+app.use(compression());
 // --- CORS FINAL SETUP (drop-in) ---
 
 // 是否需要携带 Cookie/会话（需要就设为 true）
@@ -42,6 +45,9 @@ app.options("*", cors(corsOptions));
 
 // 关键：指向前端静态图片目录
 const IMAGES_DIR = path.resolve(__dirname, "../client/public/images");
+
+// 将图片作为静态资源提供，带上长期缓存头（生产环境应使用 CDN）
+app.use('/images', express.static(IMAGES_DIR, { maxAge: '30d', etag: true }));
 
 const DATA_DIR = path.join(__dirname, "data");
 const RESULTS_DIR = path.join(__dirname, "results");
